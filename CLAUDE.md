@@ -4,6 +4,35 @@ This file provides comprehensive guidance to AI coding assistants (GitHub Copilo
 
 ---
 
+## ⚠️ IMPORTANT: Git Commit Requirement
+
+**After completing any code changes, you MUST include a combined `git add` and `git commit` command with a descriptive conventional commit message.**
+
+Always provide this command at the end of your response using multiple `-m` flags for multiline messages:
+
+```bash
+git add -A && git commit -m "<type>(<scope>): <description>" -m "<body line 1>" -m "<body line 2>"
+```
+
+**Conventional Commit Types:**
+
+- `feat`: New feature
+- `fix`: Bug fix
+- `docs`: Documentation changes
+- `style`: Code style changes (formatting, semicolons, etc.)
+- `refactor`: Code refactoring without feature changes
+- `perf`: Performance improvements
+- `test`: Adding or updating tests
+- `chore`: Maintenance tasks, dependencies, configs
+
+**Example:**
+
+```bash
+git add -A && git commit -m "feat(kana): add dakuon character support" -m "Added new dakuon characters to hiragana set" -m "Updated KanaCards component to display dakuon" -m "Added translations for new character names"
+```
+
+---
+
 ## Project Overview
 
 **KanaDojo** is a modern Japanese learning platform built with Next.js 15, React 19, and TypeScript. It provides an aesthetic, minimalist, and highly customizable environment for mastering Hiragana, Katakana, Kanji, and Vocabulary through gamified training modes.

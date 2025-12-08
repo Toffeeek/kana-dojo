@@ -34,19 +34,33 @@ const SelectionStatusBar = () => {
   const { selectedVocabSets, clearVocabObjs, clearVocabSets } = useVocabStore();
 
   // Convert kana indices to display names (e.g., "か-group", "さ-group (challenge)")
-  const kanaGroupNames = useMemo(
-    () =>
-      kanaGroupIndices.map(i => {
-        const group = kana[i];
-        if (!group) return `Group ${i + 1}`;
-        const firstKana = group.kana[0];
-        const isChallenge = group.groupName.startsWith('challenge.');
-        return isChallenge
-          ? `${firstKana}-group (challenge)`
-          : `${firstKana}-group`;
-      }),
-    [kanaGroupIndices]
-  );
+  const { kanaGroupNamesFull, kanaGroupNamesCompact } = useMemo(() => {
+    const full: string[] = [];
+    const compact: string[] = [];
+
+    kanaGroupIndices.forEach(i => {
+      const group = kana[i];
+      if (!group) {
+        const fallback = `Group ${i + 1}`;
+        full.push(fallback);
+        compact.push(fallback);
+        return;
+      }
+
+      const firstKana = group.kana[0];
+      const isChallenge = group.groupName.startsWith('challenge.');
+
+      full.push(
+        isChallenge ? `${firstKana}-group (challenge)` : `${firstKana}-group`
+      );
+      compact.push(firstKana);
+    });
+
+    return {
+      kanaGroupNamesFull: full,
+      kanaGroupNamesCompact: compact,
+    };
+  }, [kanaGroupIndices]);
 
   const hasSelection = isKana
     ? kanaGroupIndices.length > 0
@@ -75,7 +89,7 @@ const SelectionStatusBar = () => {
   }>({
     top: 0,
     left: 0,
-    width: '100%'
+    width: '100%',
   });
 
   useEffect(() => {
@@ -83,7 +97,7 @@ const SelectionStatusBar = () => {
       const sidebar = document.getElementById('main-sidebar');
       const width = window.innerWidth;
 
-      let top = 0;
+      const top = 0;
       let left: number | string = 0;
       let barWidth: number | string = '100%';
 
@@ -139,8 +153,8 @@ const SelectionStatusBar = () => {
 
   // Compact: "1, 2, 3" for kanji/vocab, or "あ, か, さ" for kana
   const formattedSelectionCompact = isKana
-    ? kanaGroupNames.length > 0
-      ? kanaGroupNames.join(', ')
+    ? kanaGroupNamesCompact.length > 0
+      ? kanaGroupNamesCompact.join(', ')
       : 'None'
     : sortedSets.length > 0
     ? sortedSets.map(set => set.replace('Set ', '')).join(', ')
@@ -148,8 +162,8 @@ const SelectionStatusBar = () => {
 
   // Full: "Level 1, Level 2, Level 3" for kanji/vocab, same as compact for kana
   const formattedSelectionFull = isKana
-    ? kanaGroupNames.length > 0
-      ? kanaGroupNames.join(', ')
+    ? kanaGroupNamesFull.length > 0
+      ? kanaGroupNamesFull.join(', ')
       : 'None'
     : sortedSets.length > 0
     ? sortedSets.map(set => set.replace('Set ', 'Level ')).join(', ')
@@ -175,7 +189,7 @@ const SelectionStatusBar = () => {
             width:
               typeof layout.width === 'number'
                 ? `${layout.width}px`
-                : layout.width
+                : layout.width,
           }}
           className={clsx(
             'fixed z-40',
@@ -191,20 +205,20 @@ const SelectionStatusBar = () => {
             )}
           >
             {/* Selected Levels Info */}
-            <div className='flex flex-row items-start gap-2 flex-1 '>
+            <div className="flex flex-row items-start gap-2 flex-1 ">
               <CircleCheck
-                className='text-[var(--secondary-color)] shrink-0 mt-0.5'
+                className="text-[var(--secondary-color)] shrink-0 mt-0.5"
                 size={20}
               />
-              <span className='text-sm md:text-base whitespace-nowrap'>
+              <span className="text-sm md:text-base whitespace-nowrap">
                 {selectionLabel}
               </span>
               {/* Compact form on small screens: "1, 2, 3" */}
-              <span className='text-[var(--secondary-color)] text-sm break-words md:hidden'>
+              <span className="text-[var(--secondary-color)] text-sm break-words md:hidden">
                 {formattedSelectionCompact}
               </span>
               {/* Full form on medium+ screens: "Level 1, Level 2" */}
-              <span className='text-[var(--secondary-color)] text-base break-words hidden md:inline'>
+              <span className="text-[var(--secondary-color)] text-base break-words hidden md:inline">
                 {formattedSelectionFull}
               </span>
             </div>
@@ -212,12 +226,12 @@ const SelectionStatusBar = () => {
             {/* Clear Button */}
             <ActionButton
               // colorScheme='main'
-              borderColorScheme='main'
-              borderRadius='2xl'
+              borderColorScheme="main"
+              borderRadius="2xl"
               borderBottomThickness={8}
-              className='py-3 px-4 bg-[var(--main-color)]/80 w-auto'
+              className="py-3 px-4 bg-[var(--main-color)]/80 w-auto"
               onClick={handleClear}
-              aria-label='Clear selected levels'
+              aria-label="Clear selected levels"
             >
               <Trash size={20} />
             </ActionButton>

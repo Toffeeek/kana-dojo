@@ -3,6 +3,10 @@ name: Vercel Deployment Notifications
 on:
   deployment_status:
 
+concurrency:
+  group: vercel-deployment-status-${{ github.event.deployment.id }}-${{ github.event.deployment_status.state }}
+  cancel-in-progress: true
+
 jobs:
   notify-discord:
     runs-on: ubuntu-latest
@@ -12,65 +16,69 @@ jobs:
       - name: Send Failure Notification to Discord
         env:
           DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          DEPLOYMENT_ENV: ${{ github.event.deployment.environment }}
+          DEPLOYMENT_REF: ${{ github.event.deployment.ref }}
+          DEPLOYMENT_SHA: ${{ github.event.deployment.sha }}
+          DEPLOYMENT_ID: ${{ github.event.deployment.id }}
+          DEPLOYMENT_STATUS: ${{ github.event.deployment_status.state }}
+          DEPLOYMENT_ERROR: ${{ github.event.deployment_status.description }}
+          DEPLOYMENT_URL: ${{ github.event.deployment_status.target_url }}
+          REPO: ${{ github.repository }}
+          REPO_URL: ${{ github.event.repository.html_url }}
+          SERVER_URL: ${{ github.server_url }}
+          RUN_ID: ${{ github.run_id }}
+          ACTOR: ${{ github.actor }}
         run: |
-          curl -H "Content-Type: application/json" \
-          -X POST \
-          -d "{
-            \"embeds\": [{
-              \"title\": \"🚨 Vercel Deployment Failed\",
-              \"description\": \"A deployment to Vercel has failed.\",
-              \"color\": 15158332,
-              \"fields\": [
-                {
-                  \"name\": \"Repository\",
-                  \"value\": \"${{ github.repository }}\",
-                  \"inline\": true
-                },
-                {
-                  \"name\": \"Branch\",
-                  \"value\": \"${{ github.event.deployment.ref }}\",
-                  \"inline\": true
-                },
-                {
-                  \"name\": \"Environment\",
-                  \"value\": \"${{ github.event.deployment.environment }}\",
-                  \"inline\": true
-                },
-                {
-                  \"name\": \"Commit\",
-                  \"value\": \"[\`${{ github.event.deployment.sha }}\`](${{ github.event.repository.html_url }}/commit/${{ github.event.deployment.sha }})\",
-                  \"inline\": false
-                },
-                {
-                  \"name\": \"Status\",
-                  \"value\": \"${{ github.event.deployment_status.state }}\",
-                  \"inline\": true
-                },
-                {
-                  \"name\": \"Error\",
-                  \"value\": \"${{ github.event.deployment_status.description }}\",
-                  \"inline\": false
-                },
-                {
-                  \"name\": \"Deployment URL\",
-                  \"value\": \"${{ github.event.deployment_status.target_url }}\",
-                  \"inline\": false
-                },
-                {
-                  \"name\": \"Workflow Run\",
-                  \"value\": \"${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}\",
-                  \"inline\": false
-                },
-                {
-                  \"name\": \"Triggered by\",
-                  \"value\": \"${{ github.actor }}\",
-                  \"inline\": true
-                }
-              ],
-              \"timestamp\": \"$(date -u +'%Y-%m-%dT%H:%M:%SZ')\"
-            }]
-          }" \
-          $DISCORD_WEBHOOK
+          python - <<'PY'
+          import json
+          import os
+          from datetime import datetime, timezone
+
+          deployment_env = os.environ.get("DEPLOYMENT_ENV", "unknown")
+          is_prod = deployment_env == "production"
+          title = f"🚨 Vercel Deploy Failed ({deployment_env})"
+          color = 15158332 if is_prod else 15105570
+
+          error = (os.environ.get("DEPLOYMENT_ERROR") or "No error description provided by the deployment status event.").strip()
+          if len(error) > 900:
+            error = error[:900] + "…"
+
+          repo = os.environ["REPO"]
+          repo_url = os.environ["REPO_URL"]
+          server_url = os.environ["SERVER_URL"]
+          run_id = os.environ["RUN_ID"]
+          ref = os.environ.get("DEPLOYMENT_REF", "unknown")
+          sha = os.environ.get("DEPLOYMENT_SHA", "unknown")
+          deployment_id = os.environ.get("DEPLOYMENT_ID", "unknown")
+          status = os.environ.get("DEPLOYMENT_STATUS", "unknown")
+          deployment_url = os.environ.get("DEPLOYMENT_URL") or "(no target_url)"
+          actor = os.environ.get("ACTOR", "unknown")
+
+          payload = {
+            "embeds": [
+              {
+                "title": title,
+                "description": "A deployment to Vercel has failed.",
+                "color": color,
+                "fields": [
+                  {"name": "Repository", "value": repo, "inline": True},
+                  {"name": "Environment", "value": deployment_env, "inline": True},
+                  {"name": "Ref", "value": f"[`{ref}`]({server_url}/{repo}/tree/{ref})", "inline": False},
+                  {"name": "Commit", "value": f"[`{sha}`]({repo_url}/commit/{sha})", "inline": False},
+                  {"name": "Deployment", "value": f"ID: `{deployment_id}`\n{server_url}/{repo}/deployments", "inline": False},
+                  {"name": "Status", "value": status, "inline": True},
+                  {"name": "Error", "value": error, "inline": False},
+                  {"name": "Deployment URL", "value": deployment_url, "inline": False},
+                  {"name": "Workflow Run", "value": f"{server_url}/{repo}/actions/runs/{run_id}", "inline": False},
+                  {"name": "Triggered by", "value": actor, "inline": True},
+                ],
+                "timestamp": datetime.now(timezone.utc).isoformat(),
+              }
+            ]
+          }
+
+          print(json.dumps(payload))
+          PY | curl -H "Content-Type: application/json" -X POST -d @- "$DISCORD_WEBHOOK"
 
   notify-success:
     runs-on: ubuntu-latest
@@ -80,32 +88,50 @@ jobs:
       - name: Send Success Notification to Discord
         env:
           DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          DEPLOYMENT_ENV: ${{ github.event.deployment.environment }}
+          DEPLOYMENT_REF: ${{ github.event.deployment.ref }}
+          DEPLOYMENT_SHA: ${{ github.event.deployment.sha }}
+          DEPLOYMENT_ID: ${{ github.event.deployment.id }}
+          DEPLOYMENT_URL: ${{ github.event.deployment_status.target_url }}
+          REPO: ${{ github.repository }}
+          REPO_URL: ${{ github.event.repository.html_url }}
+          SERVER_URL: ${{ github.server_url }}
+          RUN_ID: ${{ github.run_id }}
         run: |
-          curl -H "Content-Type: application/json" \
-          -X POST \
-          -d "{
-            \"embeds\": [{
-              \"title\": \"✅ Vercel Deployment Succeeded\",
-              \"description\": \"Production deployment completed successfully.\",
-              \"color\": 3066993,
-              \"fields\": [
-                {
-                  \"name\": \"Repository\",
-                  \"value\": \"${{ github.repository }}\",
-                  \"inline\": true
-                },
-                {
-                  \"name\": \"Branch\",
-                  \"value\": \"${{ github.ref_name }}\",
-                  \"inline\": true
-                },
-                {
-                  \"name\": \"Deployment URL\",
-                  \"value\": \"${{ github.event.deployment_status.target_url }}\",
-                  \"inline\": false
-                }
-              ],
-              \"timestamp\": \"$(date -u +'%Y-%m-%dT%H:%M:%SZ')\"
-            }]
-          }" \
-          $DISCORD_WEBHOOK
+          python - <<'PY'
+          import json
+          import os
+          from datetime import datetime, timezone
+
+          deployment_env = os.environ.get("DEPLOYMENT_ENV", "unknown")
+          repo = os.environ["REPO"]
+          repo_url = os.environ["REPO_URL"]
+          server_url = os.environ["SERVER_URL"]
+          run_id = os.environ["RUN_ID"]
+          ref = os.environ.get("DEPLOYMENT_REF", "unknown")
+          sha = os.environ.get("DEPLOYMENT_SHA", "unknown")
+          deployment_id = os.environ.get("DEPLOYMENT_ID", "unknown")
+          deployment_url = os.environ.get("DEPLOYMENT_URL") or "(no target_url)"
+
+          payload = {
+            "embeds": [
+              {
+                "title": f"✅ Vercel Deploy Succeeded ({deployment_env})",
+                "description": "Production deployment completed successfully.",
+                "color": 3066993,
+                "fields": [
+                  {"name": "Repository", "value": repo, "inline": True},
+                  {"name": "Environment", "value": deployment_env, "inline": True},
+                  {"name": "Ref", "value": f"[`{ref}`]({server_url}/{repo}/tree/{ref})", "inline": False},
+                  {"name": "Commit", "value": f"[`{sha}`]({repo_url}/commit/{sha})", "inline": False},
+                  {"name": "Deployment", "value": f"ID: `{deployment_id}`\n{server_url}/{repo}/deployments", "inline": False},
+                  {"name": "Deployment URL", "value": deployment_url, "inline": False},
+                  {"name": "Workflow Run", "value": f"{server_url}/{repo}/actions/runs/{run_id}", "inline": False},
+                ],
+                "timestamp": datetime.now(timezone.utc).isoformat(),
+              }
+            ]
+          }
+
+          print(json.dumps(payload))
+          PY | curl -H "Content-Type: application/json" -X POST -d @- "$DISCORD_WEBHOOK"

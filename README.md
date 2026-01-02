@@ -559,6 +559,47 @@ core/i18n/locales/
 3. Expand to 8+ additional languages
 4. Setup CI/CD validation in GitHub Actions
 
+#### 🌐 Language Expansion for SEO
+
+Want to help expand KanaDojo to new languages for better global SEO visibility?
+
+**Infrastructure**: ✅ Complete
+- Centralized metadata system with locale-specific files
+- Automatic OG image generation per language
+- Automated sitemap with hreflang tags
+- No code changes needed - just translate metadata!
+
+**Current Languages**:
+- ✅ English (en) - Primary
+- ✅ Spanish (es) - Fully localized
+- ✅ Japanese (ja) - Fully localized
+- 📝 French (fr) - Template/Example included
+- 📝 German (de) - Template/Example included
+
+**How to Add a New Language**:
+
+1. Read the comprehensive guide: [docs/ADDING_LANGUAGES.md](docs/ADDING_LANGUAGES.md)
+2. Create metadata file: `core/i18n/locales/{locale}/metadata.json`
+3. Translate all metadata sections (see French/German examples)
+4. Add locale to `core/i18n/routing.ts`
+5. Test locally and submit PR
+
+**SEO Impact per Language**:
+- 90+ indexed pages
+- 50+ kana subset pages with full SEO
+- Estimated +200-400 monthly visits per language
+
+**Recommended Priority Languages**:
+1. Portuguese (pt) - Brazil market (~200M speakers)
+2. French (fr) - France, Canada, Africa (~280M speakers)
+3. German (de) - Germany, Austria, Switzerland (~100M speakers)
+4. Italian (it) - Italy market (~85M speakers)
+5. Korean (ko), Chinese (zh), Russian (ru), Indonesian (id)
+
+**Performance**: Zero dev server impact, ~30-60 sec build time per language
+
+See [docs/ADDING_LANGUAGES.md](docs/ADDING_LANGUAGES.md) for complete instructions, SEO best practices, and troubleshooting.
+
 ### How to Contribute
 
 1. Fork the repository

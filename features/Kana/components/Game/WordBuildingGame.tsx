@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import clsx from 'clsx';
 import { kana } from '@/features/Kana/data/kana';
 import useKanaStore from '@/features/Kana/store/useKanaStore';
-import { CircleCheck, CircleX, RotateCcw } from 'lucide-react';
+import { CircleCheck, CircleX } from 'lucide-react';
 import { Random } from 'random-js';
 import { useCorrect, useError } from '@/shared/hooks/useAudio';
 import GameIntel from '@/shared/components/Game/GameIntel';
@@ -368,13 +368,6 @@ const WordBuildingGame = ({
     [isChecking, placedTiles, wordData.wordChars.length]
   );
 
-  // Handle reset button
-  const handleReset = useCallback(() => {
-    if (!isChecking) {
-      setPlacedTiles([]);
-    }
-  }, [isChecking]);
-
   // Not enough characters for word building
   if (selectedKana.length < wordLength || wordData.wordChars.length === 0) {
     return null;
@@ -403,7 +396,7 @@ const WordBuildingGame = ({
 
       {/* Answer Row Area - bordered section like Duolingo */}
       <div className='flex w-full flex-col items-center'>
-        <div className='w-full border-t-2 border-b-2 border-[var(--border-color)] py-6'>
+        <div className='flex min-h-[4.5rem] w-full items-center justify-center border-t-2 border-b-2 border-[var(--border-color)] py-6 sm:w-1/2'>
           <div className='flex flex-row flex-wrap justify-center gap-3'>
             <AnimatePresence mode='popLayout'>
               {placedTiles.map((char, index) => (
@@ -418,21 +411,6 @@ const WordBuildingGame = ({
               ))}
             </AnimatePresence>
           </div>
-
-          {/* Reset button */}
-          {placedTiles.length > 0 && !isChecking && (
-            <motion.button
-              type='button'
-              onClick={handleReset}
-              className='mt-4 flex w-full cursor-pointer items-center justify-center gap-2 text-sm text-[var(--text-secondary-color)] transition-colors hover:text-[var(--text-color)]'
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-            >
-              <RotateCcw className='h-4 w-4' />
-              Reset
-            </motion.button>
-          )}
         </div>
       </div>
 

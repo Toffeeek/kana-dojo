@@ -810,7 +810,13 @@ const baseThemeSets: BaseThemeGroup[] = [
         backgroundColor: 'oklch(23.5% 0.039 285.0 / 1)',  // starlit indigo-violet
         mainColor: 'oklch(91.0% 0.235 143.0 / 1)',        // wildflower lime (yellow-green)
         secondaryColor: 'oklch(93.0% 0.198 60.0 / 1)',    // dusk apricot (pastel orange)
-      }
+      },
+      {
+        id: 'aosora',
+        backgroundColor: 'oklch(21.5% 0.041 230.0 / 1)',  // airy night slate
+        mainColor: 'oklch(94.0% 0.240 194.0 / 1)',        // celestial turquoise
+        secondaryColor: 'oklch(92.5% 0.153 284.0 / 1)',   // dreamlike pale periwinkle
+},
     ]
   },
   {

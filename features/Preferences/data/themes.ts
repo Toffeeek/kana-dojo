@@ -242,6 +242,12 @@ const baseThemeSets: BaseThemeGroup[] = [
     icon: Moon,
     themes: [
       {
+        id: 'temple-bell',
+        backgroundColor: 'oklch(22.0% 0.032 60.0 / 1)',
+        mainColor: 'oklch(68.0% 0.095 70.0 / 1)',
+        secondaryColor: 'oklch(58.0% 0.075 55.0 / 1)'
+      },
+      {
         id: 'rice-field-gold',
         backgroundColor: 'oklch(24.0% 0.045 80.0 / 1)',
         mainColor: 'oklch(85.0% 0.155 90.0 / 1)',

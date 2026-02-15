@@ -1,3 +1,5 @@
+[![Vercel OSS](https://img.shields.io/badge/Vercel-OSS-000000?style=flat&logo=vercel)](https://vercel.com/oss)
+
 # AI Assistant Guide
 
 This file provides comprehensive guidance for AI coding assistants (GitHub Copilot, Claude, Kiro, Cursor, and other AI models) when working with the KanaDojo codebase.

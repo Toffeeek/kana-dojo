@@ -165,10 +165,12 @@ export default function ThemesModal({ open, onOpenChange }: ThemesModalProps) {
     if (open && !isLoaded) {
       import('@/features/Preferences/data/themes').then(module => {
         setThemeSets(
-          // Temporarily hide seasonal groups in the modal.
+          // Temporarily hide seasonal groups + Extra group in the modal.
           module.default.filter(
             group =>
-              group.name !== 'Halloween' && group.name !== 'Christmas',
+              group.name !== 'Halloween' &&
+              group.name !== 'Christmas' &&
+              group.name !== 'Extra',
           ),
         );
         setIsLoaded(true);
